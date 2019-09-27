@@ -15,8 +15,8 @@ export const attach = (
 
       // Transactions
       if (mapTransactionToProps) {
-        const write = fn => _realm.write(() => fn(_realm));
-        this.setState(mapTransactionToProps(write));
+        const transaction = fn => _realm.write(() => fn(_realm));
+        this.setState(mapTransactionToProps(transaction));
       }
     }
 
