@@ -1,7 +1,5 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import {Provider} from 'react-redux';
-import {PersistGate} from 'redux-persist/integration/react';
 
 import StatusBar from './components/StatusBar';
 import Header from './components/Header';
