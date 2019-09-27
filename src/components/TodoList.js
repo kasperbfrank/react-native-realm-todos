@@ -3,37 +3,15 @@ import {View, Text, FlatList, Button, StyleSheet} from 'react-native';
 import AddTodo from './AddTodo';
 
 import realm from '../realm';
+import {attach} from '../realm/attach';
 
-export default class TodoList extends React.PureComponent {
-  state = {todos: []};
-
-  async componentDidMount() {
-    const _realm = await realm;
-    const update = () => this.setState({todos: _realm.objects('Todo')});
-    _realm.addListener('change', update);
-    update();
-  }
-
-  async addTodo(title) {
-    const _realm = await realm;
-    try {
-      _realm.write(() => _realm.create('Todo', {title}));
-    } catch (err) {
-      console.log(`error creating todo`, err);
-    }
-  }
-
-  async reset() {
-    const _realm = await realm;
-    try {
-      _realm.write(() => _realm.delete(_realm.objects('Todo')));
-    } catch (err) {
-      console.log(`error resetting todos`, err);
-    }
+class TodoList extends React.PureComponent {
+  get todos() {
+    return this.props.todos || [];
   }
 
   render() {
-    const hasTodos = this.state.todos.length > 0;
+    const hasTodos = this.todos.length > 0;
 
     return (
       <View style={styles.container}>
@@ -42,19 +20,29 @@ export default class TodoList extends React.PureComponent {
           <Text style={styles.emptyState}>You have no todos 🤔</Text>
         ) : (
           <View>
+            <Text style={{...styles.emptyState, marginBottom: 50}}>
+              You have {this.todos.length} to do 👇
+            </Text>
             <FlatList
-              data={this.state.todos.map((t, i) => ({...t, key: i.toString()}))}
-              renderItem={({item}) => <Text>{item.title}</Text>}
+              data={this.todos.map((t, i) => ({...t, key: i.toString()}))}
+              renderItem={({item}) => (
+                <View style={styles.todoItem}>
+                  <Text>{item.title}</Text>
+                </View>
+              )}
             />
           </View>
         )}
 
-        <AddTodo style={{marginTop: 40}} submit={todo => this.addTodo(todo)} />
+        <AddTodo
+          style={{marginTop: 40}}
+          submit={todo => this.props.addTodo(todo)}
+        />
         {hasTodos && (
           <Button
             style={{marginTop: 100}}
             title="Clear"
-            onPress={() => this.reset()}
+            onPress={() => this.props.clearTodos()}
           />
         )}
       </View>
@@ -72,4 +60,19 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontSize: 24,
   },
+  todoItem: {
+    padding: 10,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 5,
+  },
 });
+
+const mapRealmToProps = realm => ({todos: realm.objects('Todo')});
+const mapTransactionToProps = transaction => ({
+  addTodo: title => transaction(realm => realm.create('Todo', {title})),
+  clearTodos: () => transaction(realm => realm.delete(realm.objects('Todo'))),
+});
+
+export default attach(realm, mapRealmToProps, mapTransactionToProps)(TodoList);
