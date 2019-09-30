@@ -14,35 +14,32 @@ class TodoList extends React.PureComponent {
     const hasTodos = this.todos.length > 0;
 
     return (
-      <View style={styles.container}>
-        <Text style={{alignSelf: 'center', fontSize: 40}}>Hi there! 🙋‍</Text>
-        {!hasTodos ? (
-          <Text style={styles.emptyState}>You have no todos 🤔</Text>
-        ) : (
-          <View>
-            <Text style={{...styles.emptyState, marginBottom: 50}}>
-              You have {this.todos.length} to do 👇
+      <View style={styles.container} behavior="padding">
+        <Text style={{alignSelf: 'center', fontSize: 40, marginBottom: 20}}>
+          Hi there! 🙋‍
+        </Text>
+        <View style={{marginBottom: 20}}>
+          {hasTodos ? (
+            <Button title="Clear" onPress={() => this.props.clearTodos()} />
+          ) : (
+            <Text style={styles.emptyState}>
+              Create a todo to get started 👇
             </Text>
-            <FlatList
-              data={this.todos.map((t, i) => ({...t, key: i.toString()}))}
-              renderItem={({item}) => (
-                <View style={styles.todoItem}>
-                  <Text>{item.title}</Text>
-                </View>
-              )}
-            />
-          </View>
-        )}
-
+          )}
+        </View>
         <AddTodo
           style={{marginTop: 40}}
           submit={todo => this.props.addTodo(todo)}
         />
         {hasTodos && (
-          <Button
-            style={{marginTop: 100}}
-            title="Clear"
-            onPress={() => this.props.clearTodos()}
+          <FlatList
+            style={{marginTop: 10}}
+            data={this.todos.map((t, i) => ({...t, key: i.toString()}))}
+            renderItem={({item}) => (
+              <View style={styles.todoItem}>
+                <Text>{item.title}</Text>
+              </View>
+            )}
           />
         )}
       </View>
@@ -52,9 +49,9 @@ class TodoList extends React.PureComponent {
 
 const styles = StyleSheet.create({
   container: {
-    height: '60%',
+    height: '80%',
     marginHorizontal: 20,
-    justifyContent: 'space-evenly',
+    marginVertical: 20,
   },
   emptyState: {
     alignSelf: 'center',
