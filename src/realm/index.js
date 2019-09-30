@@ -11,8 +11,12 @@ const TodoSchema = {
   name: 'Todo',
   properties: {
     title: 'string',
+    completed: {type: 'bool', default: false},
     user: 'User?',
   },
 };
 
-export default Realm.open({schema: [UserSchema, TodoSchema]});
+export default Realm.open({
+  schema: [UserSchema, TodoSchema],
+  schemaVersion: 1,
+});

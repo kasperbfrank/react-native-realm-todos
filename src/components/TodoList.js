@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Text, FlatList, Button, StyleSheet} from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  FlatList,
+  Button,
+  StyleSheet,
+} from 'react-native';
 import AddTodo from './AddTodo';
 
 import realm from '../realm';
@@ -12,15 +19,20 @@ class TodoList extends React.PureComponent {
 
   render() {
     const hasTodos = this.todos.length > 0;
-
     return (
       <View style={styles.container} behavior="padding">
         <Text style={{alignSelf: 'center', fontSize: 40, marginBottom: 20}}>
           Hi there! 🙋‍
         </Text>
         <View style={{marginBottom: 20}}>
+          {hasTodos && !this.todos.filter(t => !t.completed).length && (
+            <Text style={styles.emptyState}>
+              You completed everything on your todo list 🥳. Time to grab a 🍺
+              and chill!
+            </Text>
+          )}
           {hasTodos ? (
-            <Button title="Clear" onPress={() => this.props.clearTodos()} />
+            <Button title="Reset" onPress={() => this.props.clearTodos()} />
           ) : (
             <Text style={styles.emptyState}>
               Create a todo to get started 👇
@@ -34,11 +46,15 @@ class TodoList extends React.PureComponent {
         {hasTodos && (
           <FlatList
             style={{marginTop: 10}}
-            data={this.todos.map((t, i) => ({...t, key: i.toString()}))}
+            data={this.todos
+              .filter(t => !t.completed)
+              .map((todo, i) => ({todo, key: i.toString()}))}
             renderItem={({item}) => (
-              <View style={styles.todoItem}>
-                <Text>{item.title}</Text>
-              </View>
+              <TouchableOpacity
+                style={styles.todoItem}
+                onPress={() => this.props.toggleTodoComplete(item.todo)}>
+                <Text>{item.todo.title}</Text>
+              </TouchableOpacity>
             )}
           />
         )}
@@ -69,6 +85,8 @@ const styles = StyleSheet.create({
 const mapRealmToProps = realm => ({todos: realm.objects('Todo')});
 const mapTransactionToProps = transaction => ({
   addTodo: title => transaction(realm => realm.create('Todo', {title})),
+  toggleTodoComplete: todo =>
+    transaction(_ => (todo.completed = !todo.completed)),
   clearTodos: () => transaction(realm => realm.delete(realm.objects('Todo'))),
 });
 
