@@ -23,7 +23,7 @@ export default class AddTodo extends React.PureComponent {
         onChangeText={text => this.setState({text})}
         value={this.state.text}
         placeholder={placeholders[Math.round(Math.random() * 2)]}
-        onSubmitEditing={() => this.submitClear()}
+        onSubmitEditing={() => this.state.text && this.submitClear()}
       />
     );
   }
