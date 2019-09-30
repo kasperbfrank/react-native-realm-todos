@@ -5,7 +5,7 @@ export default class Header extends React.PureComponent {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>Not Another Todo App 🧞‍</Text>
+        <Text style={styles.text}>Not Another Todo App 🤦‍</Text>
       </View>
     );
   }

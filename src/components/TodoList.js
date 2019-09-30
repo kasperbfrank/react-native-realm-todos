@@ -1,36 +1,47 @@
 import React from 'react';
-import {connect} from 'react-redux';
 import {View, Text, FlatList, Button, StyleSheet} from 'react-native';
-import {bindActionCreators} from 'redux';
-
 import AddTodo from './AddTodo';
-import {addTodo, clearTodos} from '../store/actions/todo';
+
+import realm from '../realm';
+import {attach} from '../realm/attach';
 
 class TodoList extends React.PureComponent {
+  get todos() {
+    return this.props.todos || [];
+  }
+
   render() {
-    const hasTodos = this.props.todos.length > 0;
+    const hasTodos = this.todos.length > 0;
 
     return (
-      <View style={styles.container}>
-        {!hasTodos ? (
-          <Text style={styles.emptyState}>You have no todos 🙋‍</Text>
-        ) : (
-          <View>
-            <Button
-              title="Clear"
-              onPress={() => this.props.clearTodos()}></Button>
-            <FlatList
-              data={this.props.todos.map(t => ({
-                key: t,
-              }))}
-              renderItem={({item}) => <Text>{item.key}</Text>}
-            />
-          </View>
-        )}
+      <View style={styles.container} behavior="padding">
+        <Text style={{alignSelf: 'center', fontSize: 40, marginBottom: 20}}>
+          Hi there! 🙋‍
+        </Text>
+        <View style={{marginBottom: 20}}>
+          {hasTodos ? (
+            <Button title="Clear" onPress={() => this.props.clearTodos()} />
+          ) : (
+            <Text style={styles.emptyState}>
+              Create a todo to get started 👇
+            </Text>
+          )}
+        </View>
         <AddTodo
           style={{marginTop: 40}}
           submit={todo => this.props.addTodo(todo)}
         />
+        {hasTodos && (
+          <FlatList
+            style={{marginTop: 10}}
+            data={this.todos.map((t, i) => ({...t, key: i.toString()}))}
+            renderItem={({item}) => (
+              <View style={styles.todoItem}>
+                <Text>{item.title}</Text>
+              </View>
+            )}
+          />
+        )}
       </View>
     );
   }
@@ -38,27 +49,27 @@ class TodoList extends React.PureComponent {
 
 const styles = StyleSheet.create({
   container: {
-    height: '100%',
-    marginVertical: 40,
+    height: '80%',
     marginHorizontal: 20,
+    marginVertical: 20,
   },
   emptyState: {
     alignSelf: 'center',
     fontSize: 24,
   },
+  todoItem: {
+    padding: 10,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 5,
+  },
 });
 
-const mapStateToProps = state => ({todos: state.todos});
-const mapDispatchToProps = dispatch =>
-  bindActionCreators(
-    {
-      addTodo,
-      clearTodos,
-    },
-    dispatch,
-  );
+const mapRealmToProps = realm => ({todos: realm.objects('Todo')});
+const mapTransactionToProps = transaction => ({
+  addTodo: title => transaction(realm => realm.create('Todo', {title})),
+  clearTodos: () => transaction(realm => realm.delete(realm.objects('Todo'))),
+});
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(TodoList);
+export default attach(realm, mapRealmToProps, mapTransactionToProps)(TodoList);
