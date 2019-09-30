@@ -1,6 +1,8 @@
 import React from 'react';
 import {TextInput} from 'react-native';
 
+const placeholders = ['Learn how to 💃🕺', 'Get 💩 done ', 'Build a 🚀'];
+
 export default class AddTodo extends React.PureComponent {
   state = {text: ''};
 
@@ -12,10 +14,16 @@ export default class AddTodo extends React.PureComponent {
   render() {
     return (
       <TextInput
-        style={{height: 40, borderColor: 'gray', borderBottomWidth: 1}}
+        style={{
+          height: 40,
+          fontSize: 18,
+          borderColor: 'gray',
+          borderBottomWidth: 1,
+        }}
         onChangeText={text => this.setState({text})}
         value={this.state.text}
-        onSubmitEditing={() => this.submitClear()}
+        placeholder={placeholders[Math.round(Math.random() * 2)]}
+        onSubmitEditing={() => this.state.text && this.submitClear()}
       />
     );
   }
